@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 class BaseApi:
     register_endpoint = '/device_register'
     camera_endpoint = '/camera'
+    rfid_endpoint = '/rfid'
 
     def header(self):
         return {
@@ -51,5 +52,16 @@ class BaseApi:
         response = requests.post(f'{self.base_url}{BaseApi.camera_endpoint}',
                                  headers=headers, data=json.dumps(data, ensure_ascii=False).encode('utf-8'))
         logger.debug("camera_capture response" + str(response))
+
+        return response.text, BaseApi.check_response_status(response)
+
+    def rfid_action(self, rfid_message):
+        headers = self.header()
+        data = {'rfid_message': rfid_message,
+                }
+        logger.debug("rfid_action requested" + str(data))
+        response = requests.post(f'{self.base_url}{BaseApi.rfid_endpoint}',
+                                 headers=headers, data=json.dumps(data, ensure_ascii=False).encode('utf-8'))
+        logger.debug("rfid_action response" + str(response))
 
         return response.text, BaseApi.check_response_status(response)

@@ -5,6 +5,7 @@ import os
 
 from src.modules.camera import start_camera
 from src.modules.ping import ping_test
+from src.modules.read_rfid import RFIDReader, send_to_server
 from src.modules.register import register_device
 from src.modules.server_communication import BaseApi
 
@@ -55,6 +56,7 @@ if __name__ == '__main__':
         start_camera(api, config['motion']['pin'], config['camera']['height']
                      , config['camera']['width'], config['camera']['sampling_rate']
                      , config['camera']['delay'])
+        rfid = RFIDReader(send_to_server(api))
     elif args.cmd == "down":
         pass
     elif args.cmd == "ping":
