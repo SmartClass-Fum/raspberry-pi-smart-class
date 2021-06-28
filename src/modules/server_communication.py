@@ -7,7 +7,8 @@ logger = logging.getLogger(__name__)
 
 
 class BaseApi:
-    register_url = '/device_register'
+    register_endpoint = '/device_register'
+    camera_endpoint = '/camera'
 
     def header(self):
         return {
@@ -35,8 +36,20 @@ class BaseApi:
                 'class_id': class_id
                 }
         logger.debug("register_device requested" + str(data))
-        response = requests.post(f'{self.base_url}{BaseApi.register_url}',
+        response = requests.post(f'{self.base_url}{BaseApi.register_endpoint}',
                                  headers=headers, data=json.dumps(data, ensure_ascii=False).encode('utf-8'))
         logger.debug("register_device response" + str(response))
+
+        return response.text, BaseApi.check_response_status(response)
+
+    def camera_capture(self, time_stamp, encode_image):
+        headers = self.header()
+        data = {'time_stamp': time_stamp,
+                'encode_image': encode_image
+                }
+        logger.debug("camera_capture requested" + str(data))
+        response = requests.post(f'{self.base_url}{BaseApi.camera_endpoint}',
+                                 headers=headers, data=json.dumps(data, ensure_ascii=False).encode('utf-8'))
+        logger.debug("camera_capture response" + str(response))
 
         return response.text, BaseApi.check_response_status(response)
