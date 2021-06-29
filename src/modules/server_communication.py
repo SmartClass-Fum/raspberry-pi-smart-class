@@ -3,6 +3,8 @@ import logging
 
 import requests
 
+import paho.mqtt.client as mqtt
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,6 +32,10 @@ class BaseApi:
         self.base_url = base_url
         self.auth_key = auth_key
 
+        broker_address = "broker.mqtt-dashboard.com"
+        self.client = mqtt.Client("SmartClassFUM")
+        self.client.connect(broker_address)
+
     def register_device(self, ip, class_name, class_id):
         headers = self.header()
         data = {'ip': ip,
@@ -49,8 +55,9 @@ class BaseApi:
                 'encode_image': encode_image
                 }
         logger.debug("camera_capture requested" + str(data))
-        response = requests.post(f'{self.base_url}{BaseApi.camera_endpoint}',
-                                 headers=headers, data=json.dumps(data, ensure_ascii=False).encode('utf-8'))
+        # response = requests.post(f'{self.base_url}{BaseApi.camera_endpoint}',
+        #                          headers=headers, data=json.dumps(data, ensure_ascii=False).encode('utf-8'))
+        response = self.client.publish("fum_smart_class_iot/camera", data)
         logger.debug("camera_capture response" + str(response))
 
         return response.text, BaseApi.check_response_status(response)
