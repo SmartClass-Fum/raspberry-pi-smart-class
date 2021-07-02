@@ -33,7 +33,7 @@ class BaseApi:
         self.auth_key = auth_key
 
         broker_address = "broker.mqtt-dashboard.com"
-        self.client = mqtt.Client("SmartClassFUM")
+        self.client = mqtt.Client("SmartClassFUMRaspberryPI")
         self.client.connect(broker_address)
 
     def register_device(self, ip, class_name, class_id):
@@ -57,7 +57,7 @@ class BaseApi:
         logger.debug("camera_capture requested" + str(data))
         # response = requests.post(f'{self.base_url}{BaseApi.camera_endpoint}',
         #                          headers=headers, data=json.dumps(data, ensure_ascii=False).encode('utf-8'))
-        response = self.client.publish("fumSmartClassIOT/camera", data)
+        response = self.client.publish("fumSmartClassIot/camera", data)
         logger.debug("camera_capture response" + str(response))
 
         return response.text, BaseApi.check_response_status(response)
