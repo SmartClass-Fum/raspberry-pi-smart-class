@@ -57,7 +57,7 @@ class BaseApi:
         logger.debug("camera_capture requested" + str(data))
         # response = requests.post(f'{self.base_url}{BaseApi.camera_endpoint}',
         #                          headers=headers, data=json.dumps(data, ensure_ascii=False).encode('utf-8'))
-        response = self.client.publish("fum_smart_class_iot/camera", data)
+        response = self.client.publish("fumSmartClassIOT/camera", data)
         logger.debug("camera_capture response" + str(response))
 
         return response.text, BaseApi.check_response_status(response)
