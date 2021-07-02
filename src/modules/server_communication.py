@@ -5,8 +5,6 @@ import requests
 
 import paho.mqtt.client as mqtt
 
-logger = logging.getLogger(__name__)
-
 
 class BaseApi:
     register_endpoint = '/device_register'
@@ -42,10 +40,10 @@ class BaseApi:
                 'class_name': class_name,
                 'class_id': class_id
                 }
-        logger.debug("register_device requested" + str(data))
+        logging.error("register_device requested " + str(data))
         response = requests.post(f'{self.base_url}{BaseApi.register_endpoint}',
                                  headers=headers, data=json.dumps(data, ensure_ascii=False).encode('utf-8'))
-        logger.debug("register_device response" + str(response))
+        logging.error("register_device response " + str(response))
 
         return response.text, BaseApi.check_response_status(response)
 
@@ -54,11 +52,11 @@ class BaseApi:
         data = {'time_stamp': time_stamp,
                 'encode_image': encode_image
                 }
-        logger.debug("camera_capture requested" + str(data))
+        logging.error("camera_capture requested " + str(data))
         # response = requests.post(f'{self.base_url}{BaseApi.camera_endpoint}',
         #                          headers=headers, data=json.dumps(data, ensure_ascii=False).encode('utf-8'))
-        response = self.client.publish("fum_smart_class_iot/camera", data)
-        logger.debug("camera_capture response" + str(response))
+        response = self.client.publish("fumSmartClassIot/camera", data)
+        logging.error("camera_capture response" + str(response))
 
         return response.text, BaseApi.check_response_status(response)
 
@@ -66,9 +64,9 @@ class BaseApi:
         headers = self.header()
         data = {'rfid_message': rfid_message,
                 }
-        logger.debug("rfid_action requested" + str(data))
+        logging.error("rfid_action requested" + str(data))
         response = requests.post(f'{self.base_url}{BaseApi.rfid_endpoint}',
                                  headers=headers, data=json.dumps(data, ensure_ascii=False).encode('utf-8'))
-        logger.debug("rfid_action response" + str(response))
+        logging.error("rfid_action response" + str(response))
 
         return response.text, BaseApi.check_response_status(response)

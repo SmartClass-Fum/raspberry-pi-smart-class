@@ -2,12 +2,16 @@ import argparse
 import configparser
 import logging
 import os
+import signal
+# import threading
+import multiprocessing as mp
 
-from src.modules.camera import start_camera
-from src.modules.ping import ping_test
-from src.modules.read_rfid import RFIDReader, send_to_server
-from src.modules.register import register_device
-from src.modules.server_communication import BaseApi
+from modules.camera import start_camera
+from modules.ping import ping_test
+# from modules.read_rfid import RFIDReader, send_to_server
+from modules.read_rfid import start_rfid
+from modules.register import register_device
+from modules.server_communication import BaseApi
 
 
 def _read_config(config_path="config.ini"):
@@ -41,9 +45,9 @@ if __name__ == '__main__':
                         help='command')
     args = parser.parse_args()
 
-    config = _read_config()
+    config = _read_config() 
     logging.basicConfig(
-        level=getattr(logging, config['logger']['log_level'], 'INFO'),
+        level=getattr(logging, config['logger']['log_level'], 'DEBUG'),
         format="%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s"
     )
     _config_logger(config['logger']['logPath'], config['logger']['fileName'])
@@ -53,13 +57,35 @@ if __name__ == '__main__':
         logging.error("can't register device and shutdown")
         os.exit(2)
     if args.cmd == "up":
-        start_camera(api, config['motion']['pin'], config['camera']['height']
+        camera_process = mp.Process(target=start_camera, args=(
+            config['motion']['pin'], config['camera']['height']
                      , config['camera']['width'], config['camera']['sampling_rate']
-                     , config['camera']['delay'])
-        rfid = RFIDReader(send_to_server(api))
+                     , config['camera']['delay']
+        ))
+        rfid_process = mp.Process(target=start_rfid,)
+        # start_camera(api, config['motion']['pin'], config['camera']['height']
+        #              , config['camera']['width'], config['camera']['sampling_rate']
+        #              , config['camera']['delay'])
+        # rfid_stop_event = threading.Event()
+        # rfid = RFIDReader(callback=send_to_server(api), )
+        camera_process.start()
+        rfid_process.start()
+        logging.error("Command UP is done")
+
+        def on_sigint(*args):
+            logging.error("Terminating Processes")
+            camera_process.terminate()
+            rfid_process.terminate()
+            logging.error("All Processes are terminated")
+            os.exit()
+        signal.signal(signal.SIGINT, on_sigint)
     elif args.cmd == "down":
+        rfid_stop_event.set()
         pass
     elif args.cmd == "ping":
         ping_test()
     else:
         logging.warning("WTF?")
+
+    while True:
+        pass
