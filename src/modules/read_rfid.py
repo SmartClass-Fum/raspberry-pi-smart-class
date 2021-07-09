@@ -25,32 +25,35 @@ def _read_config(config_path="config.ini"):
 def _config_logger(log_path, log_name):
     root_logger = logging.getLogger()
 
-    file_handler = logging.FileHandler("{0}/camera-{1}.log".format(log_path, log_name))
+    file_handler = logging.FileHandler("{0}/rfid-{1}.log".format(log_path, log_name))
     root_logger.addHandler(file_handler)
 
     console_handler = logging.StreamHandler()
     root_logger.addHandler(console_handler)
+    return root_logger
 
 
-def rfid_read(message, class_id, client):
-    data = {'class_id': class_id,
-            'rfid_message': message,
+def rfid_read(message, class_id, client, logger):
+    data = {'class_id': class_id.strip(),
+            'rfid_message': message.strip(),
         }
     logging.error("rfid_action requested" + str(data))
     response = client.publish("fumSmartClassIot/rfid", json.dumps(data))
+    
 
 
-def _handle_rfid(reader, class_id, client):
-    logging.error("Started Reading")
+def _handle_rfid(reader, class_id, client, logger):
+    logger.info("Started Reading")
     try:
         while True:
             idd, message = reader.read_no_block()
-            logging.error(f"A new Message has been read By RFID module. The Message: {message}")
             if message is not None or idd is not None:
-                rfid_read(message, class_id, client)
+                logging.error(f"A new Message has been read By RFID module. The Message: {message}")
+
+                rfid_read(message, class_id, client, logger)
             time.sleep(1)
     finally:
-        logging.error("Finished Reading RFID")
+        logger.info("Finished Reading RFID")
 
 def start_rfid():
     config = _read_config() 
@@ -58,12 +61,12 @@ def start_rfid():
         level=getattr(logging, config['logger']['log_level'], 'DEBUG'),
         format="%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s"
     )
-    _config_logger(config['logger']['logPath'], config['logger']['fileName'])
+    logger = _config_logger(config['logger']['logPath'], config['logger']['fileName'])
     broker_address = "broker.mqtt-dashboard.com"
-    client = mqtt.Client("SmartClassFUMCameraModule")
+    client = mqtt.Client("SmartClassFUMRFIDModule12345")
     client.connect(broker_address)
     reader = SimpleMFRC522()
-    _handle_rfid(reader, config['class']['class_id'], client)
+    _handle_rfid(reader, config['class']['class_id'], client, logger)
 
 
 # class RFIDReader:

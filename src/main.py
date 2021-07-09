@@ -1,15 +1,16 @@
 import argparse
 import configparser
 import logging
-import os
+import sys
 import signal
-# import threading
 import multiprocessing as mp
+import time
 
 from modules.camera import start_camera
 from modules.ping import ping_test
 # from modules.read_rfid import RFIDReader, send_to_server
 from modules.read_rfid import start_rfid
+from modules.lock import start_lock
 from modules.register import register_device
 from modules.server_communication import BaseApi
 
@@ -63,24 +64,29 @@ if __name__ == '__main__':
                      , config['camera']['delay']
         ))
         rfid_process = mp.Process(target=start_rfid,)
+        #lock_process = mp.Process(target=start_lock,)
         # start_camera(api, config['motion']['pin'], config['camera']['height']
         #              , config['camera']['width'], config['camera']['sampling_rate']
         #              , config['camera']['delay'])
         # rfid_stop_event = threading.Event()
         # rfid = RFIDReader(callback=send_to_server(api), )
-        camera_process.start()
+ 
+        #camera_process.start()
+        # time.sleep(1.5)
         rfid_process.start()
+        #lock_process.start()
         logging.error("Command UP is done")
 
         def on_sigint(*args):
             logging.error("Terminating Processes")
-            camera_process.terminate()
+#            camera_process.terminate()
             rfid_process.terminate()
+#            lock_process.terminate()
             logging.error("All Processes are terminated")
-            os.exit()
+            sys.exit()
         signal.signal(signal.SIGINT, on_sigint)
     elif args.cmd == "down":
-        rfid_stop_event.set()
+        # rfid_stop_event.set()
         pass
     elif args.cmd == "ping":
         ping_test()
